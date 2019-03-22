@@ -1,0 +1,59 @@
+- name: -->key add step
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: 4AB0F789CBA31744CC7DA76A8CF63AD3F06FC659
+    state: present
+
+- name: --> Add PPA
+  apt_repository:
+    repo: deb http://ppa.launchpad.net/jonathonf/python-3.6/ubuntu xenial main
+    state: present
+
+- name: --> Install Python
+  apt:
+    name: python3.7
+    state: present
+    update_cache: yes
+
+- name: --> Install pip
+  apt:
+    name: python3-pip
+    state: present
+
+- name: --> Install virtualenv package with pip
+  pip:
+    name: virtualenv
+    executable: pip3
+
+- name: --> install flask with pip
+  pip: 
+    name: flask
+    executable: pip3
+
+- name: --> install Werkzeug with pip
+  pip: 
+    name: Werkzeug
+    executable: pip3
+
+- name: --> Create virtualenv
+  become: no
+  pip:
+    virtualenv: "{{ env }}"
+    virtualenv_python: python3.7
+    requirements: "{{ requirements }}"
+
+- name: create dir for repo as sudo
+  file:
+    path: /webapps/devops
+    state: directory
+    owner: vagrant
+    group: vagrant
+
+- name: clone repo
+  become: no 
+  git:
+    repo: 'https://bitbucket.org/azneita/devops-challenge.git'
+    dest: /webapps/devops
+
+- name: Launch flask website
+  shell: "cd /webapps/devops; sudo nohup flask run --host 10.10.10.20 --port 80 2>&1 >/dev/null &"
